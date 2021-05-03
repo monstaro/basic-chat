@@ -90,39 +90,33 @@ const channel = client.channel('messaging', {
 
 
 *In this example we are leaving out an optional ‘id’ field as the second argument of .channel(). This field can be used to create a custom channel name, but for 1 on 1 instances it's best practice to have the API autogenerate a channel id.*
+
 *Another option is to run `channel.watch()` instead of `channel.create()`. Running `channel.watch()` will not only create the channel if it doesn't exist yet, but it will also tell the server to listen for any events that occur in a channel, such as when a new message is sent. More info on watching channels [here](https://getstream.io/chat/docs/node/watch_channel/?language=javascript)*
-*If you have already created this channel before, you don't need to do this step and can just get the channel instance, which is covered in the next step.
+
+*If you have already created this channel before, you don't need to do this step and can just get the channel instance, which is covered in the following step.*
 
 
 ## Send A Message ##
 
-Now that we’ve created our channel, we can access that channel instance and run its sendMessage() function. A channel instance also includes lots of other useful information, such as the `created_by` field, `member_count`, and more. 
+Now that we’ve created our channel, we can access that channel instance and run its sendMessage() method. A channel instance also includes lots of other useful information, such as the `created_by` field, `member_count`. 
 
 
-To access the channel instance and its methods, you need the channel ID, which you can get from the `queryChannels()` method.
+To access the channel instance and its methods, you need the channelID, which you can get from the `queryChannels()` method.
 ((should we offer the option of getting the channel id from channel.create or .watch? is this a good practice??))
 
 ```
-//filtering by channels that have yourself (client.userID) and the other member (userID)
+//create a filter that checks for yourself (client.userID) and one other user (userID)
   const filter = {type: "messaging", members: { $eq: [client.userID, userID] }}
-  const channels = await chatClient.queryChannels(filter)
-//queryChannels returns an array
+//supply this filter to queryChannels()
+  const channels = await client.queryChannels(filter)
+//queryChannels returns an array, get the id from the returned channel
   const channelID = channels[0]?.id
-//get the id 
+//create the channel instance by supplying client.channel() with the channel type and the channelID.
   const channel = client.channel('messaging', '!members-5pIrXogxJ4iAz0eicPTfMZHX9--ZeISVOgJ7Dts3g2M')
-//get the channel instance and all of its methods by running client.channel()
 }
 ```
-This will return your channelID, which will look something like `!members-5pIrXogxJ4iAz0eicPTfMZHX9--ZeISVOgJ7Dts3g2M`
-
 Once you’ve gotten your channel instance you can use the `sendMessage()` method. 
 ```
-const channel = client.channel('messaging', {
- members: [chatClient.user.id, 'Suki']
-})
- 
-await channel.watch()
-// or channel.create()? What is best practice here?
 channel.sendMessage({ text: "Hi Friend!" })
 ```
 
