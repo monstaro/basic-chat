@@ -50,7 +50,11 @@ Note how you do not have to run `upsertUser` to add a user to a database, but it
 
 
 ## Pick A User to Chat With ##
-1. Before we start a chat with somebody, we need to see all of the users of our application, which we can do by running the `queryUsers` method. This method is quite flexible. You can use it to filter users by `id`, their `last_active` or `created_at` date, whether they are banned, and more. It also has a `limit` and `offset` option if you want to implement pagination. Refer to [this page](https://getstream.io/chat/docs/node/query_users/?language=javascript) in the docs for more info. For this 1-on-1 chat app, we are just going to query all users with a limit of 10 so we can get a list of users we can chat with, and sort it by the most recently created. 
+1. Before we start a chat with somebody, we need to see all of the users of our application, which we can do by running the `queryUsers` method. This method is quite flexible. You can use it to filter users by `id`, their `last_active` or `created_at` date, whether they are banned, and more. It also has a `limit` and `offset` option if you want to implement pagination. Refer to [this page](https://getstream.io/chat/docs/node/query_users/?language=javascript) in the docs for more info. 
+
+For this 1-on-1 chat app, we are just going to query all users with a limit of 10 so we can get a list of users we can chat with, and sort it by the most recently created. 
+
+*There are a lot of ways to query. You can query for channels, query for users, and members of channels. Learn more about query syntax [here](https://getstream.io/chat/docs/react/query_syntax/?language=js)*
 
 ```
 const getUsers = async () => {
@@ -63,7 +67,7 @@ The response will return a list of users that you can use to display a list of n
 
 
 
-2. Now that we have our list of users, we can create a 1-on-1 chat channel instance as simply as running `client.channel()` and passing in a channel type and an object with an array of members, then running the `create` method.
+2. Now that we have our list of users, we can create a 1-on-1 chat channel by running `client.channel()` and passing in a channel type and an object with an array of members, then running the `create` method.
 ```const channel = client.channel('messaging', {
  members: [chatClient.user.id, 'Suki'],
 })
@@ -71,7 +75,6 @@ The response will return a list of users that you can use to display a list of n
 await channel.create()
 ```
 
-*Note: In this instance we are leaving out an optional ‘id’ field as the second argument of .channel(). This field can be used to create a custom channel name, but for 1 on 1 instances it's best practice to have the API autogenerate a channel id.*
 
 You can also add custom parameters to this channel if you'd like, for example:
 ```
@@ -81,14 +84,32 @@ const channel = client.channel('messaging', {
 })
 ```
 
-Another option is to run `channel.watch()` instead of `channel.create()`. Running `channel.watch()` will not only create the channel if it doesn't exist yet, but it will also tell the server to listen for any events that occur in a channel, such as when a new message is sent. More info on watching channels [here](https://getstream.io/chat/docs/node/watch_channel/?language=javascript)
+
+*Note: In this example we are leaving out an optional ‘id’ field as the second argument of .channel(). This field can be used to create a custom channel name, but for 1 on 1 instances it's best practice to have the API autogenerate a channel id.*
+*Another option is to run `channel.watch()` instead of `channel.create()`. Running `channel.watch()` will not only create the channel if it doesn't exist yet, but it will also tell the server to listen for any events that occur in a channel, such as when a new message is sent. More info on watching channels [here](https://getstream.io/chat/docs/node/watch_channel/?language=javascript)*
+
+
 
 ## Send A Message ##
 
-Now that we’ve created our channel, we can access that channel instance and run its sendMessage() function. A channel instance also includes lots of other useful information, such as the `created_by` field, `member_count`, and much more. 
+Now that we’ve created our channel, we can access that channel instance and run its sendMessage() function. A channel instance also includes lots of other useful information, such as the `created_by` field, `member_count`, and more. 
 
-To access the channel instance and its methods, you need the channel ID, which you can get
-from the response of `channel.create()` or `channel.watch()`.  
+
+To access the channel instance and its methods, you need the channel ID, which you can get from the `queryChannels()` method.
+((should we offer the option of getting the channel id from channel.create or .watch? is this a good practice??))
+
+```
+//filtering by channels that have yourself (client.userID) and the other member (userID)
+  const filter = {type: "messaging", members: { $eq: [client.userID, userID] }}
+  const channels = await chatClient.queryChannels(filter)
+//queryChannels returns an array
+  const channelID = channels[0]?.id
+//get the id 
+  const channel = client.channel('messaging', '!members-5pIrXogxJ4iAz0eicPTfMZHX9--ZeISVOgJ7Dts3g2M')
+//get the channel instance and all of its methods by running client.channel()
+}
+```
+This will return your channelID, which will look something like `!members-5pIrXogxJ4iAz0eicPTfMZHX9--ZeISVOgJ7Dts3g2M`
 
 Once you’ve gotten your channel instance you can use the `sendMessage()` method. 
 ```
@@ -101,3 +122,15 @@ await channel.watch()
 channel.sendMessage({ text: "Hi Friend!" })
 ```
 
+
+## Listening for Events ##
+
+When a message is sent, you'll likely want this to render instantly in your app. If you're watching a channel, you are subscribed to the channel and can listen for its events. For a complete list of events, refer to [this page](https://getstream.io/chat/docs/react/event_object/?language=js) in the docs.
+In this case, we want to listen for `message.new` and so we can trigger a re-render of our message list when a new message is sent.
+Listening for an event is as simple as running the `on` method on your channel instance. For example,
+```
+channel.on('message.new', event => { 
+    //Updating your message list in a stateful React component...
+    
+});
+```
