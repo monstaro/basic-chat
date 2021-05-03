@@ -45,8 +45,9 @@ It’s encouraged to read [this](https://getstream.zendesk.com/hc/en-us/articles
  
  
 3. You can log in by taking your server-side generated token and running `client.connectUser({ id: your_name }, your_token)`
-Note how you do not have to run `upsertUser` to add a user to a database, but it is an option if you want to add a user or multiple users without having them actually connect, as running `connectUser` can impact your MAUs.
-((link to part of repo where we pass token from server to client side))
+
+*If you run this method with a user that has not already been added using `upsertUser`, it will automatically upsert the user for you. `upsertUser` is useful if you want to add members to your application without actually connecting them with `connectUser` - which can increase your monthly MAUs. *
+((link to part of repo where we pass token from server to client side?))
 
 
 ## Pick A User to Chat With ##
@@ -59,17 +60,20 @@ For this 1-on-1 chat app, we are just going to query all users with a limit of 1
 ```
 const getUsers = async () => {
   const response = await chatClient.queryUsers({}, [{ created_at: -1 }], { limit: 10 })
+  return response
   }
   
   getUsers()
 ```
-The response will return a list of users that you can use to display a list of names.
+((should we add the .then to this method to indicate they need to resolve the promise?)) 
+The response of getUsers() will return a list of users.
 
 
 
 2. Now that we have our list of users, we can create a 1-on-1 chat channel by running `client.channel()` and passing in a channel type and an object with an array of members, then running the `create` method.
+Let's say we want to start a chat with Suki...
 ```const channel = client.channel('messaging', {
- members: [chatClient.user.id, 'Suki'],
+ members: [client.user.id, 'Suki'],
 })
  
 await channel.create()
@@ -85,9 +89,9 @@ const channel = client.channel('messaging', {
 ```
 
 
-*Note: In this example we are leaving out an optional ‘id’ field as the second argument of .channel(). This field can be used to create a custom channel name, but for 1 on 1 instances it's best practice to have the API autogenerate a channel id.*
+*In this example we are leaving out an optional ‘id’ field as the second argument of .channel(). This field can be used to create a custom channel name, but for 1 on 1 instances it's best practice to have the API autogenerate a channel id.*
 *Another option is to run `channel.watch()` instead of `channel.create()`. Running `channel.watch()` will not only create the channel if it doesn't exist yet, but it will also tell the server to listen for any events that occur in a channel, such as when a new message is sent. More info on watching channels [here](https://getstream.io/chat/docs/node/watch_channel/?language=javascript)*
-
+*If you have already created this channel before, you don't need to do this step and can just get the channel instance, which is covered in the next step.
 
 
 ## Send A Message ##
