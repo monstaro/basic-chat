@@ -50,7 +50,7 @@ It’s encouraged to read [this](https://getstream.zendesk.com/hc/en-us/articles
 ((link to part of repo where we pass token from server to client side?))
 
 
-## Pick A User to Chat With ##
+## Get User List ##
 1. Before we start a chat with somebody, we need to see all of the users of our application, which we can do by running the `queryUsers` method. This method is quite flexible. You can use it to filter users by `id`, their `last_active` or `created_at` date, whether they are banned, and more. It also has a `limit` and `offset` option if you want to implement pagination. Refer to [this page](https://getstream.io/chat/docs/node/query_users/?language=javascript) in the docs for more info. 
 
 For this 1-on-1 chat app, we are just going to query all users with a limit of 10 so we can get a list of users we can chat with, and sort it by the most recently created. 
@@ -69,8 +69,8 @@ const getUsers = async () => {
 The response of getUsers() will return a list of users.
 
 
-
-2. Now that we have our list of users, we can create a 1-on-1 chat channel by running `client.channel()` and passing in a channel type and an object with an array of members, then running the `create` method.
+## Create Chat Channel ##
+Now that we have our list of users, we can create a 1-on-1 chat channel by running `client.channel()` and passing in a channel type and an object with an array of members, then running the `create` method.
 Let's say we want to start a chat with Suki...
 ```const channel = client.channel('messaging', {
  members: [client.user.id, 'Suki'],
@@ -78,6 +78,8 @@ Let's say we want to start a chat with Suki...
  
 await channel.create()
 ```
+
+((should we use this example using channel.watch instead?))
 
 
 You can also add custom parameters to this channel if you'd like, for example:
@@ -98,7 +100,7 @@ const channel = client.channel('messaging', {
 
 ## Send A Message ##
 
-Now that we’ve created our channel, we can access that channel instance and run its sendMessage() method. A channel instance also includes lots of other useful information, such as the `created_by` field, `member_count`. 
+Now that we’ve created our channel, we can access that channel instance and run its sendMessage() method. A channel instance also includes lots of other useful information, such as the `created_by` field, and `member_count`. 
 
 
 To access the channel instance and its methods, you need the channelID, which you can get from the `queryChannels()` method.
@@ -112,13 +114,14 @@ To access the channel instance and its methods, you need the channelID, which yo
 //queryChannels returns an array, get the id from the returned channel
   const channelID = channels[0]?.id
 //create the channel instance by supplying client.channel() with the channel type and the channelID.
-  const channel = client.channel('messaging', '!members-5pIrXogxJ4iAz0eicPTfMZHX9--ZeISVOgJ7Dts3g2M')
+  const channel = client.channel('messaging', channelID)
 }
 ```
 Once you’ve gotten your channel instance you can use the `sendMessage()` method. 
 ```
 channel.sendMessage({ text: "Hi Friend!" })
 ```
+
 
 
 ## Listening for Events ##
@@ -129,6 +132,6 @@ Listening for an event is as simple as running the `on` method on your channel i
 ```
 channel.on('message.new', event => { 
     //Updating your message list in a stateful React component...
-    
+     setMessages(channel.state.messages);
 });
 ```
