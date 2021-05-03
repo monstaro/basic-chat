@@ -103,7 +103,7 @@ const channel = client.channel('messaging', {
 Now that we’ve created our channel, we can access that channel instance and run its sendMessage() method. A channel instance also includes lots of other useful information, such as the `created_by` field, and `member_count`. 
 
 
-To access the channel instance and its methods, you need the channelID, which you can get from the `queryChannels()` method.
+To access the channel instance and its methods, you need the channelID, which you can get from the `queryChannels()` method. `queryChannels` will return channel state and automatically watch the channel. 
 ((should we offer the option of getting the channel id from channel.create or .watch? is this a good practice??))
 
 ```
@@ -121,7 +121,6 @@ Once you’ve gotten your channel instance you can use the `sendMessage()` metho
 ```
 channel.sendMessage({ text: "Hi Friend!" })
 ```
-
 
 
 ## Listening for Events ##
