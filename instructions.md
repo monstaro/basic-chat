@@ -134,3 +134,12 @@ channel.on('message.new', event => {
      setMessages(channel.state.messages);
 });
 ```
+## Channel Types & User Permissions ##
+At this point, we have covered the basics of what you will need to get up-and-running with a simple chat app. 
+The next thing you might want to learn about is channel types. So far, we've been working with the 'messaging' channel type. However, if you want to implement a Twitch-style live chat, you can use a 'livestream' channel type. Other channel types include 'team' and 'commerce', and you can also create your own channel types. You can go [here](https://getstream.io/chat/docs/node/channel_features/?language=javascript) for more information.
+
+The difference between these channel types is their default user permissions. For example, in a 'messaging' style channel, a user with the role 'guest' is unable to 'read' a channel, but in a livestream style chat, a guest is allowed read the channel. For a more complete list of default permissions, refer to [this page](https://getstream.io/chat/docs/node/channel_permission_policies/?language=javascript) in the docs. 
+
+All of these user permissions are fully customizable, and you can access these permissions in your dashboard. 
+If you go to your dashboard, click on your app, then on Chat > Overview, you will see the full list of permissions in a JSON file at the bottom of the page. 
+In addition to the permissions, you are provided with lots of other options. A commonly used option is to enable the blocklist, which will block messages that contain profanity. 
