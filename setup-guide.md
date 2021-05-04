@@ -59,7 +59,8 @@ For this 1-on-1 chat app, we are just going to query all users with a limit of 1
 
 ```
 const getUsers = async () => {
-  const response = await chatClient.queryUsers({}, [{ created_at: -1 }], { limit: 10 })
+  const filter = { id: { $ne: client.userID } };
+  const response = await chatClient.queryUsers(filter, [{ created_at: -1 }], { limit: 10 })
   return response
   }
   
